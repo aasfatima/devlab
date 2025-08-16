@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+api_binary
+devlab-api
+devlab-worker
+sample-*-client
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+test_*.sh
+*.test
+coverage.out
+
+# Logs
+*.log
+logs/
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Scripts (keep only necessary ones)
+scripts/test_*.sh
+scripts/build-images.sh
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Go cache
+vendor/
+
+# Binary files
+*.bin
+*.out 

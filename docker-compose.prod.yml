@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:latest
+    container_name: devlab-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./configs/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - devlab-network
+    environment:
+      - MONGO_INITDB_DATABASE=devlab
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: devlab-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - devlab-network
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  # DevLab API Server (Production)
+  devlab-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devlab-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # REST API
+      - "9090:9090"  # gRPC
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - DB_NAME=devlab
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/
+      - CLEANUP_ENABLED=true
+      - CLEANUP_INTERVAL=5m
+      - MAX_SCENARIO_AGE=24h
+      # Production settings
+      - LOG_LEVEL=info
+      - METRICS_ENABLED=true
+      - JWT_SECRET=${JWT_SECRET:-devlab_secret}
+    depends_on:
+      - mongodb
+      - rabbitmq
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configs:/app/configs:ro
+      - ./logs:/app/logs
+    # Production user mapping (set via environment)
+    user: "${UID:-501}:${GID:-20}"
+    networks:
+      - devlab-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Production security
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # DevLab Worker (Production)
+  devlab-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: devlab-worker
+    restart: unless-stopped
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - DB_NAME=devlab
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/
+      - CLEANUP_ENABLED=true
+      - CLEANUP_INTERVAL=5m
+      - MAX_SCENARIO_AGE=24h
+    depends_on:
+      - mongodb
+      - rabbitmq
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./configs:/app/configs:ro
+      - ./logs:/app/logs
+    # Production user mapping (set via environment)
+    user: "${UID:-501}:${GID:-20}"
+    networks:
+      - devlab-network
+    healthcheck:
+      test: ["CMD", "ps", "aux", "|", "grep", "devlab-worker", "|", "grep", "-v", "grep"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Redis Cache (Production)
+  redis:
+    image: redis:7-alpine
+    container_name: devlab-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - devlab-network
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-devlab_redis}
+
+volumes:
+  mongodb_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  devlab-network:
+    driver: bridge 

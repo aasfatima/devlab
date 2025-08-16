@@ -1,0 +1,55 @@
+# Multi-stage build for DevLab Worker
+FROM golang:1.23-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the worker
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o devlab-worker ./cmd/worker
+
+# Final stage
+FROM alpine:latest
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates tzdata
+
+# Create non-root user
+RUN addgroup -g 1001 -S devlab && \
+    adduser -u 1001 -S devlab -G devlab
+
+# Set working directory
+WORKDIR /app
+
+# Copy binary from builder stage
+COPY --from=builder /app/devlab-worker .
+
+# Copy configuration files
+COPY --from=builder /app/configs ./configs
+
+# Create necessary directories
+RUN mkdir -p /app/logs
+
+# Change ownership to non-root user
+RUN chown -R devlab:devlab /app
+
+# Switch to non-root user
+USER devlab
+
+# Health check for worker
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD ps aux | grep devlab-worker | grep -v grep || exit 1
+
+# Default command
+CMD ["./devlab-worker"]

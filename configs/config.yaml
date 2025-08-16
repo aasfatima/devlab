@@ -1,0 +1,12 @@
+# Sample configuration for DevLab
+server:
+  port: 8000
+mongo:
+  uri: mongodb://mongodb:27017
+db_name: devlab
+rabbitmq:
+  uri: amqp://guest:guest@localhost:5672/
+docker:
+  image_prefix: devlab/
+terminal:
+  port: 3000

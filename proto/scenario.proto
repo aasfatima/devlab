@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package scenario;
+
+option go_package = "devlab/proto";
+
+service ScenarioService {
+  rpc StartScenario (StartScenarioRequest) returns (StartScenarioResponse);
+  rpc StopScenario (StopScenarioRequest) returns (StopScenarioResponse);
+  rpc GetScenarioStatus (GetScenarioStatusRequest) returns (GetScenarioStatusResponse);
+  rpc GetTerminalURL (GetTerminalURLRequest) returns (GetTerminalURLResponse);
+  rpc GetDirectoryStructure (GetDirectoryStructureRequest) returns (GetDirectoryStructureResponse);
+}
+
+message StartScenarioRequest {
+  string user_id = 1;
+  string scenario_type = 2;
+  string script = 3;
+}
+
+message StartScenarioResponse {
+  string scenario_id = 1;
+  string status = 2;
+}
+
+message StopScenarioRequest {
+  string scenario_id = 1;
+}
+
+message StopScenarioResponse {
+  string scenario_id = 1;
+  string message = 2;
+}
+
+message GetScenarioStatusRequest {
+  string scenario_id = 1;
+}
+
+message GetScenarioStatusResponse {
+  string scenario_id = 1;
+  string user_id = 2;
+  string scenario_type = 3;
+  string container_id = 4;
+  string status = 5;
+  string container_status = 6;
+  string message = 7;
+}
+
+message GetTerminalURLRequest {
+  string scenario_id = 1;
+}
+
+message GetTerminalURLResponse {
+  string scenario_id = 1;
+  string url = 2;
+  string message = 3;
+}
+
+message GetDirectoryStructureRequest {
+  string scenario_id = 1;
+}
+
+message FileNode {
+  string path = 1;
+  string type = 2;
+  bool is_root = 3;
+  repeated string children = 4;
+  string content = 5;
+  bool is_open = 6;
+  bool is_saved = 7;
+}
+
+message GetDirectoryStructureResponse {
+  string scenario_id = 1;
+  string path = 2;
+  repeated FileNode structure = 3;
+  string message = 4;
+}
