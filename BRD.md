@@ -1,16 +1,15 @@
 # 📄 Business Requirements Document (BRD)
 
 ## 🏷️ Project Title:
-**DevLab – Cloud-Based Coding Environment Provisioner**
+**DevLab – Containerized Development Environment Manager**
 
 ---
 
 ## 📌 Executive Summary
-DevLab is a cloud-native servive designed to provision isolated development environments (containers) for users. It enables learners, developers, or engineers to launch fully-configured coding workspaces that include language-specific tools, Docker, Kubernetes CLIs, and direct terminal access through a browser. It is Golang project.
+DevLab is a Go-based platform and cloud-native service designed to provision isolated development environments (containers) for users. Perfect for coding interviews, demos, and secure development scenarios. It enables learners, developers, or engineers to launch fully-configured coding workspaces that include language-specific tools, Docker, Kubernetes CLIs, and direct terminal access through a browser. 
 
 The project is inspired by real-world experience with cloud platforms like Katacoda, DevLab focuses on infrastructure automation, container orchestration, and developer usability. It will be implemented in **Go**, with supporting tools like **RabbitMQ**, **MongoDB**,**Kubernetes**, **Docker**, **gRPC**, and **ttyd** for web terminal access.
 
-The scope is limited to an MVP deliverable within **1-2 weeks**, targeting a feature-rich but lean architecture.
 
 ---
 
@@ -93,7 +92,7 @@ User
 |------------------|----------------------------|-----------------------------------|
 | Go Environment   | go, vim, Git               | Write and run Go code             |
 | Docker-in-Docker | Docker CLI, Compose        | Test Dockerfiles, build images    |
-| Kubernetes Lab   | kubectl, kind              | Simulate `kubectl` commands       |
+| Kubernetes Lab   | k3s, kind              | Simulate `k3s` commands       |
 | Python Environment| python3, pip, Flask        | Write and run Python code         |
 | Go-Kubernetes    | go, kubectl, kind          | Go development with K8s tools     |
 | Python-Kubernetes| python3, kubectl, kind     | Python development with K8s tools |
