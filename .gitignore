@@ -10,7 +10,6 @@ docs/deployment/
 # Keep Swagger docs (docs/api/) - it's actively used!
 
 # API documentation (but keep docs/api/)
-api/
 
 # Excessive testing scripts (keep locally)
 scripts/testing/
