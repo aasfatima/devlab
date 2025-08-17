@@ -58,7 +58,6 @@ Thumbs.db
 desktop.ini
 
 # Build artifacts
-build/
 bin/
 dist/
 *.exe
